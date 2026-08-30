@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: dim_zone
+    description: Dimension des zones NYC (TLC taxi zone lookup).
+    columns:
+      - name: zone_id
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_zone_demand
+    description: >
+      Table Gold : demande agrégée par zone/heure/mode, avec baseline historique 4 semaines.
+    columns:
+      - name: zone_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_zone')
+              field: zone_id
+      - name: trip_count
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+  # - name: fct_zone_anomaly
+  #   description: Écarts de demande vs baseline, utilisé par le tool Anomaly Detection de l'agent.
+  #   columns:
+  #     - name: pct_deviation_from_baseline
+  #       tests:
+  #         - dbt_utils.accepted_range:
+  #             min_value: -100
+  #             max_value: 1000

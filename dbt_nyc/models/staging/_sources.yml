@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: raw
+    database: NYC_PROJECT
+    schema: RAW
+    tables:
+      - name: taxi_trips
+        loaded_at_field: ingested_at
+        freshness:
+          warn_after: {count: 35, period: day}   
+          error_after: {count: 60, period: day}
+      - name: bike_trips
+        loaded_at_field: ingested_at
+        freshness:
+          warn_after: {count: 35, period: day}
+          error_after: {count: 60, period: day}
+      - name: weather_observations
+        loaded_at_field: ingested_at
+        freshness:
+          warn_after: {count: 30, period: minute}  
+          error_after: {count: 2, period: hour}
+      - name: raw_events
+        loaded_at_field: ingestion_time
+      - name: taxi_zone_lookup

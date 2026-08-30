@@ -1,0 +1,14 @@
+nyc_mobility:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "<ACCOUNT_ID>"        
+      user: "USER_DBT"
+      password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
+      role: "ROLE_NYC_PROJECT"
+      database: "NYC_PROJECT"
+      warehouse: "WH_NYC_PROJECT"
+      schema: "STAGING"                   
+      threads: 4
+      client_session_keep_alive: false

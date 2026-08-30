@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: stg_taxi_trips
+    description: Trips taxi nettoyés, un par ligne, dédupliqués par trip_key.
+    columns:
+      - name: trip_key
+        description: Clé surrogate (vendor_id + pickup_datetime + zones)
+        tests:
+          - unique
+          - not_null
+      - name: zone_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_taxi_zones')
+              field: zone_id
+      - name: fare_amount
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1000
+
+  - name: stg_bike_trips
+    description: Trips Citi Bike nettoyés.
+    columns:
+      - name: ride_id
+        tests:
+          - unique
+          - not_null
+      - name: started_at
+        tests:
+          - not_null
+
+  - name: stg_weather
+    description: Observations météo, flux réellement live.
+    columns:
+      - name: observed_at
+        tests:
+          - not_null
+
+  - name: stg_taxi_zones
+    description: Référentiel des zones TLC.
+    columns:
+      - name: zone_id
+        tests:
+          - unique
+          - not_null
