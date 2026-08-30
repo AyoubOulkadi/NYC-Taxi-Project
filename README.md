@@ -1,4 +1,4 @@
-# NYC Intelligent Mobility Platform — Implémentation
+# NYC Intelligent Mobility Platform
 
 Squelette de projet complet correspondant au blueprint (Azure + Snowflake + dbt).
 Ordre d'exécution ci-dessous. Chaque étape suppose que la précédente est terminée.
@@ -8,24 +8,14 @@ Ordre d'exécution ci-dessous. Chaque étape suppose que la précédente est ter
 - Compte Azure (avec droits de créer des ressources : RG, Storage, Event Hubs, Key Vault)
 - Compte Snowflake (trial gratuit possible : https://signup.snowflake.com, choisir la région **Azure**)
 - Azure CLI installé + connecté (`az login`)
-- Terraform >= 1.5
 - Python 3.10+
 - dbt-core + dbt-snowflake (`pip install dbt-core dbt-snowflake`)
 - SnowSQL ou l'UI Snowflake (Snowsight) pour lancer les scripts SQL
 
-## Étape 1 — Infra Azure (Terraform)
-
-```bash
-cd terraform
-cp terraform.tfvars.example terraform.tfvars   # renseigne tes valeurs
-terraform init
-terraform plan
-terraform apply
-```
+## Étape 1 — Infra Azure 
 
 Crée : Resource Group, Storage Account (ADLS Gen2, hierarchical namespace), containers `raw` et `landing`,
 Event Hubs Namespace + Event Hub (`nyc-events`), Key Vault.
-Récupère les outputs (`terraform output`) : tu en auras besoin pour Snowflake et les scripts Python.
 
 ## Étape 2 — Snowflake (SQL)
 
@@ -33,7 +23,7 @@ Dans Snowsight, exécute dans l'ordre (en tant que `ACCOUNTADMIN` puis rôle pro
 
 ```bash
 snowflake/00_setup.sql               # database, warehouse, rôles
-snowflake/01_storage_integration.sql # connexion Snowflake <-> ADLS (à adapter avec tes valeurs Terraform)
+snowflake/01_storage_integration.sql # connexion Snowflake <-> ADLS 
 snowflake/02_raw_tables.sql          # tables RAW (taxi, bike, weather, events)
 ```
 
@@ -74,7 +64,7 @@ python scripts/event_replay_simulator.py --source taxi --input path/to/taxi_2024
 Côté Snowflake :
 1. Configure le **Kafka connector Snowflake** pour consommer l'Event Hub `nyc-events`
    (endpoint compatible Kafka — voir doc Snowflake "Snowpipe Streaming with Kafka connector",
-   utilise `eventhub_consumer_connection_string` de Terraform).
+   utilise `eventhub_consumer_connection_string`).
 2. Lance `snowflake/04_streaming.sql` : crée les Dynamic Tables de dédup et d'agrégation
    near-real-time (`RT_ZONE_DEMAND_15MIN`, `RT_DEMAND_SPIKES`) — équivalent fonctionnel
    de Structured Streaming, sans cluster Spark à gérer.
@@ -83,7 +73,7 @@ Côté Snowflake :
 
 | Phase | Statut | Fichiers |
 |---|---|---|
-| 1–2. Infra Azure | ✅ Code prêt | `terraform/` |
+| 1–2. Infra Azure |
 | 2. Snowflake setup | ✅ Code prêt | `snowflake/00_setup.sql`, `01_storage_integration.sql` |
 | 3. Ingestion → ADLS → RAW | ✅ Code prêt | `scripts/load_to_adls.py`, `snowflake/02_raw_tables.sql`, `03_load_raw.sql` |
 | 4. dbt staging/intermediate/marts | ✅ Code prêt | `dbt_nyc/models/` (taxi, bike, weather, zones, demande, anomalies) |
